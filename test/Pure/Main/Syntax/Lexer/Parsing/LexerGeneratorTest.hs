@@ -1,4 +1,4 @@
-module Pure.Main.Syntax.Parsing.LexerGeneratorTest
+module Pure.Main.Syntax.Lexer.Parsing.LexerGeneratorTest
   ( lexerGeneratorTest,
   )
 where
@@ -16,9 +16,9 @@ import Data.Maybe (Maybe (Just, Nothing))
 import Data.Monoid (Monoid (mconcat))
 import Data.Text as T (Text, pack, replicate, singleton, splitOn)
 import GHC.Integer (Integer, absInteger)
-import Main.Syntax.Parsing.Lexer (lexing)
-import Main.Syntax.Writing.Ranged as R (writeFuncs)
-import Main.Syntax.Writing.Source as F (writeFuncs)
+import Main.Syntax.Lexer.Parsing.Lexer (lexing)
+import Main.Syntax.Lexer.Writing.Ranged as R (writeFuncs)
+import Main.Syntax.Lexer.Writing.Source as F (writeFuncs)
 import Pure.Main.Syntax.Shared (runLexer)
 import Shared.Conditional.Debug.Trace (trace)
 import Shared.Errors (Errors (Errors, errors))

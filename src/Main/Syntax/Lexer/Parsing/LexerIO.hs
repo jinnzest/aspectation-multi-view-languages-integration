@@ -1,4 +1,4 @@
-module Main.Syntax.Parsing.LexerIO
+module Main.Syntax.Lexer.Parsing.LexerIO
   ( lexingIO,
     lexingText,
   )
@@ -12,8 +12,8 @@ import Data.Function (($), (.))
 import Data.Functor.Identity (Identity (runIdentity))
 import Data.Text (Text, pack, unpack)
 import Data.Text.IO as DTIO (putStrLn, readFile)
-import Main.Syntax.Parsing.Lexer (lexing)
-import Main.Syntax.LexerModel (LexerModel)
+import Main.Syntax.Lexer.LexerModel (LexerModel)
+import Main.Syntax.Lexer.Parsing.Lexer (lexing)
 import Shared.Conditional.Debug.Trace (trace)
 import Shared.Errors (Error (Error), Errors (Errors, errors))
 import Shared.Lexer.Data (Lexer)

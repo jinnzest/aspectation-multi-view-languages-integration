@@ -1,6 +1,6 @@
 {-# LANGUAGE GADTs #-}
 
-module Main.Syntax.LexerModel
+module Main.Syntax.Lexer.LexerModel
   ( Func (Func, fBody, fSig),
     LexerModel,
     Number (Number, mant, dec, exp, sign),

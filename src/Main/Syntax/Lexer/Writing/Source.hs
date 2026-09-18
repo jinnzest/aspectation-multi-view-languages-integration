@@ -1,4 +1,4 @@
-module Main.Syntax.Writing.Source
+module Main.Syntax.Lexer.Writing.Source
   ( writeFuncs,
     writeFuncSig,
   )
@@ -13,7 +13,7 @@ import Data.List (map, reverse)
 import Data.Maybe (Maybe (Just, Nothing), maybe)
 import Data.String (String)
 import Data.Text as T (Text, pack, unpack)
-import Main.Syntax.LexerModel
+import Main.Syntax.Lexer.LexerModel
   ( BodyExpr
       ( AlphaNumBodyExpr,
         HigherPriorityExpr,

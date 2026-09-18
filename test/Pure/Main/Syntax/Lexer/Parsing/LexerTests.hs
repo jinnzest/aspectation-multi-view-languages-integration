@@ -1,4 +1,4 @@
-module Pure.Main.Syntax.Parsing.LexerTests
+module Pure.Main.Syntax.Lexer.Parsing.LexerTests
   ( lexerTests,
   )
 where
@@ -6,9 +6,9 @@ where
 import Data.Either (Either (Left, Right))
 import Data.Function (($))
 import Data.Text (Text, unpack)
-import Main.Syntax.Parsing.Lexer (lexing)
-import Main.Syntax.LexerModel (Func)
-import Main.Syntax.Writing.Ranged (writeFuncs)
+import Main.Syntax.Lexer.LexerModel (Func)
+import Main.Syntax.Lexer.Parsing.Lexer (lexing)
+import Main.Syntax.Lexer.Writing.Ranged (writeFuncs)
 import Pure.Main.Syntax.Shared (runLexer)
 import Shared.Errors (Error (Error), Errors (Errors))
 import Shared.Location.Data (Ranged)

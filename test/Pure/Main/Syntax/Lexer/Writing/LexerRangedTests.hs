@@ -1,4 +1,4 @@
-module Pure.Main.Syntax.Writing.LexerRangedTests
+module Pure.Main.Syntax.Lexer.Writing.LexerRangedTests
   ( lexerRangedWritingTests,
   )
 where
@@ -7,7 +7,7 @@ import Data.Bool (Bool (False))
 import Data.Function (($))
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text, unpack)
-import Main.Syntax.LexerModel
+import Main.Syntax.Lexer.LexerModel
   ( BodyExpr
       ( AlphaNumBodyExpr,
         HigherPriorityExpr,
@@ -24,7 +24,7 @@ import Main.Syntax.LexerModel
     Number (Number, dec, exp, mant, sign),
     ParamSigExpr (AlphaNumParamSigExpr),
   )
-import Main.Syntax.Writing.Ranged (writeFuncs)
+import Main.Syntax.Lexer.Writing.Ranged (writeFuncs)
 import Pure.Main.Syntax.Shared (mkOcRanged, mkRanged)
 import Shared.Location.Data
   ( BracketsKind (RoundBrackets),

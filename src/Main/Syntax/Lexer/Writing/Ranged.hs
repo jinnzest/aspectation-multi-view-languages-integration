@@ -1,4 +1,4 @@
-module Main.Syntax.Writing.Ranged
+module Main.Syntax.Lexer.Writing.Ranged
   ( writeFuncs,
   )
 where
@@ -10,8 +10,8 @@ import Data.Maybe (Maybe (Just, Nothing))
 import Data.Monoid (Monoid (mconcat))
 import Data.Text as T (Text)
 import GHC.Num (Num ((+)))
-import Main.Syntax.Parsing.Shared (getBodyExprRange, getBodyExprsRange, getNameSigExprRange, getParamSigExprRange)
-import Main.Syntax.LexerModel (BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr), ExprsBlock (ExprsBlock, ebExprs, ebSemicolon), Func (Func, fBody, fSig), FuncBody (FuncBody), FuncSig (FuncSig, fsName, fsParams), FuncSigParams (InfixSigParams, PrefixSigParams), HoParamParams (HoInfixParamParams, HoPrefixParamParams), HpParamSigExpr (FoParamSigExpr, HoParamSigExpr, hpseName, hpseParams), NameSigExpr (AlphaNumNameSigExpr, SpecNameSigExpr), Nested (InBracketsNested, IndentedNested, ibExprs), Number (Number, dec, exp, mant, sign), ParamSigExpr (AlphaNumParamSigExpr, HpParamSigExpr, NumberParamSigExpr, TextParamSigExpr))
+import Main.Syntax.Lexer.LexerModel (BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr), ExprsBlock (ExprsBlock, ebExprs, ebSemicolon), Func (Func, fBody, fSig), FuncBody (FuncBody), FuncSig (FuncSig, fsName, fsParams), FuncSigParams (InfixSigParams, PrefixSigParams), HoParamParams (HoInfixParamParams, HoPrefixParamParams), HpParamSigExpr (FoParamSigExpr, HoParamSigExpr, hpseName, hpseParams), NameSigExpr (AlphaNumNameSigExpr, SpecNameSigExpr), Nested (InBracketsNested, IndentedNested, ibExprs), Number (Number, dec, exp, mant, sign), ParamSigExpr (AlphaNumParamSigExpr, HpParamSigExpr, NumberParamSigExpr, TextParamSigExpr))
+import Main.Syntax.Lexer.Parsing.Shared (getBodyExprRange, getBodyExprsRange, getNameSigExprRange, getParamSigExprRange)
 import Shared.Location.Data (OcRanged (ocItem, ocRange), Range (Range, from, to), Ranged (Ranged, rItem, range))
 import Shared.Text.Utils (indent, nL)
 import Text.Shakespeare.Text (ToText (toText), st)

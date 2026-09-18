@@ -1,4 +1,4 @@
-module Main.Syntax.Parsing.Layouting (mkLayouts) where
+module Main.Syntax.Lexer.Parsing.Layouting (mkLayouts) where
 
 import Data.Bool (Bool (False, True), otherwise)
 import Data.Eq ((==))
@@ -11,13 +11,13 @@ import Data.List as L (foldr, last, reverse, (++))
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Ord (Ord ((<), (<=), (>)))
 import Data.Tuple (snd)
-import Main.Syntax.Parsing.Shared (getBodyExprRange)
-import Main.Syntax.LexerModel
+import Main.Syntax.Lexer.LexerModel
   ( BodyExpr (HigherPriorityExpr, SpecBodyExpr),
     ExprsBlock (ExprsBlock, ebExprs),
     Nested (IndentedNested),
     ebSemicolon,
   )
+import Main.Syntax.Lexer.Parsing.Shared (getBodyExprRange)
 import Shared.Location.Data (Position (column, line), Range (from, to), Ranged (Ranged, rItem))
 
 -- import Text.Shakespeare.Text (st)

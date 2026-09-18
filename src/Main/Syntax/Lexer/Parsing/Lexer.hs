@@ -1,4 +1,4 @@
-module Main.Syntax.Parsing.Lexer
+module Main.Syntax.Lexer.Parsing.Lexer
   ( Lexer,
     lexing,
   )
@@ -15,8 +15,7 @@ import Data.Maybe (Maybe (Just))
 import Data.Text as T (Text, pack)
 import GHC.Num (Num ((*)))
 import GHC.Num.Integer (Integer)
-import Main.Syntax.Parsing.Layouting (mkLayouts)
-import Main.Syntax.LexerModel
+import Main.Syntax.Lexer.LexerModel
   ( BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr),
     ExprsBlock,
     Func (Func, fBody, fSig),
@@ -30,6 +29,7 @@ import Main.Syntax.LexerModel
     Number (Number, dec, exp, mant, sign),
     ParamSigExpr (AlphaNumParamSigExpr, HpParamSigExpr, NumberParamSigExpr, TextParamSigExpr),
   )
+import Main.Syntax.Lexer.Parsing.Layouting (mkLayouts)
 import Shared.Conditional.Debug.Parse (dbg)
 import Shared.Lexer.Data (Lexer)
 import Shared.Location.Data (BracketsKind (CurlyBrackets, RoundBrackets, SquareBrackets), OcRanged (OcRanged, cSpaces, oSpaces, ocItem, ocRange), Position (line), Range (from), Ranged (range))
@@ -114,7 +114,7 @@ alphaNum =
     $ do
       an <-
         hidden
-          (pack <$> some Main.Syntax.Parsing.Lexer.alphaNumChar)
+          (pack <$> some Main.Syntax.Lexer.Parsing.Lexer.alphaNumChar)
           <?> "alphanumeric identifier"
       notFollowedBy $ char '.'
       if an == "_" then fail "alphanumeric can't be a single underscore" else return an

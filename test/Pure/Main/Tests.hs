@@ -3,11 +3,11 @@ module Pure.Main.Tests
   )
 where
 
-import Pure.Main.Syntax.LexerSourceTests (lexerFormattedWritingTests)
-import Pure.Main.Syntax.Parsing.LexerErrorTests (lexerErrorTests)
-import Pure.Main.Syntax.Parsing.LexerGeneratorTest (lexerGeneratorTest)
-import Pure.Main.Syntax.Parsing.LexerTests (lexerTests)
-import Pure.Main.Syntax.Writing.LexerRangedTests (lexerRangedWritingTests)
+import Pure.Main.Syntax.Lexer.LexerSourceTests (lexerFormattedWritingTests)
+import Pure.Main.Syntax.Lexer.Parsing.LexerErrorTests (lexerErrorTests)
+import Pure.Main.Syntax.Lexer.Parsing.LexerGeneratorTest (lexerGeneratorTest)
+import Pure.Main.Syntax.Lexer.Parsing.LexerTests (lexerTests)
+import Pure.Main.Syntax.Lexer.Writing.LexerRangedTests (lexerRangedWritingTests)
 import Test.Tasty (TestTree, testGroup)
 
 mainTests :: TestTree

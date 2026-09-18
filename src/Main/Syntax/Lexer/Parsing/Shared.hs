@@ -1,10 +1,10 @@
-module Main.Syntax.Parsing.Shared (getBodyExprSpaces, getBodyExprRange, getParamSigExprRange, getNameSigExprRange, getBodyExprsRange, getBodyBlockExprsRange) where
+module Main.Syntax.Lexer.Parsing.Shared (getBodyExprSpaces, getBodyExprRange, getParamSigExprRange, getNameSigExprRange, getBodyExprsRange, getBodyBlockExprsRange) where
 
 import Data.Function (($))
 import Data.List (head, last)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text)
-import Main.Syntax.LexerModel
+import Main.Syntax.Lexer.LexerModel
   ( BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr),
     ExprsBlock (ExprsBlock, ebExprs, ebSemicolon),
     NameSigExpr (AlphaNumNameSigExpr, SpecNameSigExpr),
