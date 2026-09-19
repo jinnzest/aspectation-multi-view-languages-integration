@@ -1,7 +1,7 @@
 This is a system for software development called Aspectation. 
-It has been implemented following a programming paradigm described in the MultiLanguage Manifesto (https://github.com/jinnzest/multilanguage-manifesto).
+It has been implemented following a programming paradigm described in Multi-View Programming Integration Paradigm (MVPI) (https://github.com/jinnzest/multi-view_programming_integration).
 
-Aspectation MultiLanguage is dual-licensed under Apache 2.0 and MIT. 
+Aspectation MVPI is dual-licensed under Apache 2.0 and MIT. 
 See LICENSE-APACHE and LICENSE-MIT for details.
 
 # Setting up a developer environment:
