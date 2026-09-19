@@ -262,7 +262,7 @@ genInBrackets :: BracketsKind -> Gen Text
 genInBrackets bracketsKind = do
   expression <-
     oneof
-      [genTextWithSpaces, genNumberWithSpaces, genAlphaNumWithSpaces, genSpecWithSpaces, return ""]
+      [genTextWithSpaces, genNumberWithSpaces, genAlphaNumWithSpaces, genSpecWithSpaces]
   case bracketsKind of
     RoundBrackets -> return [st|(#{expression})|]
     SquareBrackets -> return [st|[#{expression}]|]

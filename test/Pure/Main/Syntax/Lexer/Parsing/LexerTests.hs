@@ -434,6 +434,7 @@ lexerTests =
             |			3:9 - 3:13 higher priority expressions
             |				3:11 - 3:12 expressions block
             |					3:11 - 3:12 semicolon
+            |					3:11 - 3:12 empty nested
             |			4:10 - 4:11 nested expressions
             |				4:10 - 4:11 expressions block
             |					4:10 - 4:11 number
@@ -515,6 +516,7 @@ lexerTests =
             |					expr2
             |		1:34 - 1:35 expressions block
             |			1:34 - 1:35 semicolon
+            |			1:34 - 1:35 empty nested
             |],
       testCaseParse
         "func->id1+++id2"

@@ -5,12 +5,12 @@ module Main.Syntax.Lexer.Parsing.Lexer
 where
 
 import Control.Applicative ((<$>), (<*))
-import Control.Monad (Monad (return), void, when)
-import Control.Monad.Except (MonadFail (fail))
+import Control.Monad (Monad (return), MonadFail (fail), void, when)
 import Data.Char (Char)
 import Data.Eq (Eq ((==)))
 import Data.Function (($))
 import Data.Functor (($>))
+import Data.List.NonEmpty (NonEmpty)
 import Data.Maybe (Maybe (Just))
 import Data.Text as T (Text, pack)
 import GHC.Num (Num ((*)))
@@ -158,12 +158,12 @@ text =
   )
     <?> "text"
 
-bodyBlocks :: Int -> Lexer [ExprsBlock]
+bodyBlocks :: Int -> Lexer (NonEmpty ExprsBlock)
 bodyBlocks baseLine = do
-  exprs <- many bodyExpr
+  exprs <- some bodyExpr
   return $ mkLayouts baseLine exprs
 
-tryBrackets :: BracketsKind -> Indent -> Lexer (BracketsKind, OcRanged [ExprsBlock])
+tryBrackets :: BracketsKind -> Indent -> Lexer (BracketsKind, OcRanged (NonEmpty ExprsBlock))
 tryBrackets kind ind = try ((kind,) <$> bracketsRanged kind ind bodyBlocks)
 
 inBracketsExpr :: Indent -> Lexer Nested
@@ -191,11 +191,6 @@ bodyExpr =
       <|> try (SpecBodyExpr <$> ranged Indented specBody)
       <|> try (SpecBodyExpr <$> ranged Indented semicolon)
       <|> try (TextBodyExpr <$> ranged Indented text)
-
--- failWhenSemicolonAtTheEndOfLines :: [ExprsBlock] -> Lexer  [ExprsBlock]
--- failWhenSemicolonAtTheEndOfLines = mapM (\eb@ExprsBlock{ebExprs=exprs} -> case last exprs of
---               SpecBodyExpr Ranged {rItem = ";"} -> fail "';' character at the end of a line is not allowed"
---               _ -> return eb)
 
 funcBody :: Lexer FuncBody
 funcBody =

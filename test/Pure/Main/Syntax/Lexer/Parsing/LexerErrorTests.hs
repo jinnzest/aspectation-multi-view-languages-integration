@@ -71,7 +71,7 @@ lexerErrorTests =
              |1 | brokenBodyFunc->(
              |  |                  ^
              |unexpected end of input
-             |expecting alphanumeric identifier, carriage return, close bracket, newline, number, open bracket, space, special characters identifier, tab, text, or underscore
+             |expecting alphanumeric identifier, carriage return, newline, number, open bracket, space, special characters identifier, tab, text, or underscore
              |],
       testCaseParseError
         "f->(123456789"

@@ -5,6 +5,7 @@ where
 
 import Data.Bool (Bool (False))
 import Data.Function (($))
+import Data.List.NonEmpty as NE (fromList)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Text (Text, unpack)
 import Main.Syntax.Lexer.LexerModel
@@ -50,7 +51,7 @@ lexerRangedWritingTests =
         [ mkRanged 1 2 7 8 $
             Func
               { fSig = FuncSig {fsName = AlphaNumNameSigExpr $ mkRanged 1 2 3 4 "Name", fsParams = PrefixSigParams [], fsURL = ""},
-                fBody = FuncBody $ mkRanged 5 6 7 8 [ExprsBlock {ebExprs = [AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id"], ebSemicolon = Nothing}]
+                fBody = FuncBody $ mkRanged 5 6 7 8 $ NE.fromList [ExprsBlock {ebExprs = NE.fromList [AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id"], ebSemicolon = Nothing}]
               }
         ]
         [sbt|
@@ -74,7 +75,7 @@ lexerRangedWritingTests =
                       fsParams = PrefixSigParams [AlphaNumParamSigExpr $ mkRanged 5 6 7 8 "Param"],
                       fsURL = ""
                     },
-                fBody = FuncBody $ mkRanged 13 14 15 16 [ExprsBlock {ebExprs = [AlphaNumBodyExpr $ mkRanged 9 10 11 12 "1"], ebSemicolon = Nothing}]
+                fBody = FuncBody $ mkRanged 13 14 15 16 $ NE.fromList [ExprsBlock {ebExprs = NE.fromList [AlphaNumBodyExpr $ mkRanged 9 10 11 12 "1"], ebSemicolon = Nothing}]
               }
         ]
         [sbt|
@@ -106,7 +107,7 @@ lexerRangedWritingTests =
                           ],
                       fsURL = ""
                     },
-                fBody = FuncBody $ mkRanged 25 26 27 28 [ExprsBlock {ebExprs = [TextBodyExpr $ mkRanged 21 22 23 24 "text"], ebSemicolon = Nothing}]
+                fBody = FuncBody $ mkRanged 25 26 27 28 $ NE.fromList [ExprsBlock {ebExprs = NE.fromList [TextBodyExpr $ mkRanged 21 22 23 24 "text"], ebSemicolon = Nothing}]
               }
         ]
         [sbt|
@@ -142,19 +143,21 @@ lexerRangedWritingTests =
                       fsURL = ""
                     },
                 fBody =
-                  FuncBody $
-                    mkRanged
+                  FuncBody
+                    $ mkRanged
                       29
                       30
                       31
                       32
+                    $ NE.fromList
                       [ ExprsBlock
                           { ebExprs =
-                              [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "id",
-                                AlphaNumBodyExpr $ mkRanged 17 18 19 20 "1st",
-                                NumberBodyExpr $ mkRanged 21 22 23 24 $ Number {mant = 1, dec = Just 2, exp = Nothing, sign = False},
-                                TextBodyExpr $ mkRanged 25 26 27 28 "the\tfirst line of text\nthe second line of text"
-                              ],
+                              NE.fromList
+                                [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "id",
+                                  AlphaNumBodyExpr $ mkRanged 17 18 19 20 "1st",
+                                  NumberBodyExpr $ mkRanged 21 22 23 24 $ Number {mant = 1, dec = Just 2, exp = Nothing, sign = False},
+                                  TextBodyExpr $ mkRanged 25 26 27 28 "the\tfirst line of text\nthe second line of text"
+                                ],
                             ebSemicolon = Nothing
                           }
                       ]
@@ -194,28 +197,32 @@ lexerRangedWritingTests =
             Func
               { fSig = FuncSig {fsName = AlphaNumNameSigExpr $ mkRanged 1 2 3 4 "Name", fsParams = PrefixSigParams [], fsURL = ""},
                 fBody =
-                  FuncBody $
-                    mkRanged
+                  FuncBody
+                    $ mkRanged
                       22
                       23
                       24
                       25
+                    $ NE.fromList
                       [ ExprsBlock
                           { ebExprs =
-                              [ AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id",
-                                HigherPriorityExpr
-                                  ( IndentedNested
-                                      [ ExprsBlock
-                                          { ebExprs =
-                                              [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "subId",
-                                                AlphaNumBodyExpr $ mkRanged 17 18 19 20 "subId2"
-                                              ],
-                                            ebSemicolon = Nothing
-                                          }
-                                      ]
-                                  ),
-                                AlphaNumBodyExpr $ mkRanged 21 22 23 24 "id2"
-                              ],
+                              NE.fromList
+                                [ AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id",
+                                  HigherPriorityExpr
+                                    ( IndentedNested $
+                                        NE.fromList
+                                          [ ExprsBlock
+                                              { ebExprs =
+                                                  NE.fromList
+                                                    [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "subId",
+                                                      AlphaNumBodyExpr $ mkRanged 17 18 19 20 "subId2"
+                                                    ],
+                                                ebSemicolon = Nothing
+                                              }
+                                          ]
+                                    ),
+                                  AlphaNumBodyExpr $ mkRanged 21 22 23 24 "id2"
+                                ],
                             ebSemicolon = Nothing
                           }
                       ]
@@ -246,35 +253,39 @@ lexerRangedWritingTests =
             Func
               { fSig = FuncSig {fsName = AlphaNumNameSigExpr $ mkRanged 1 2 3 4 "Name", fsParams = PrefixSigParams [], fsURL = ""},
                 fBody =
-                  FuncBody $
-                    mkRanged
+                  FuncBody
+                    $ mkRanged
                       25
                       26
                       27
                       28
+                    $ NE.fromList
                       [ ExprsBlock
                           { ebExprs =
-                              [ AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id",
-                                HigherPriorityExpr
-                                  InBracketsNested
-                                    { ibExprs =
-                                        mkOcRanged
-                                          13
-                                          14
-                                          15
-                                          16
-                                          [ ExprsBlock
-                                              { ebExprs =
-                                                  [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "subId",
-                                                    AlphaNumBodyExpr $ mkRanged 17 18 19 20 "subId2"
-                                                  ],
-                                                ebSemicolon = Nothing
-                                              }
-                                          ],
-                                      ibKind = RoundBrackets
-                                    },
-                                AlphaNumBodyExpr $ mkRanged 21 22 23 24 "id2"
-                              ],
+                              NE.fromList
+                                [ AlphaNumBodyExpr $ mkRanged 5 6 7 8 "id",
+                                  HigherPriorityExpr
+                                    InBracketsNested
+                                      { ibExprs =
+                                          mkOcRanged
+                                            13
+                                            14
+                                            15
+                                            16
+                                            $ NE.fromList
+                                              [ ExprsBlock
+                                                  { ebExprs =
+                                                      NE.fromList
+                                                        [ AlphaNumBodyExpr $ mkRanged 13 14 15 16 "subId",
+                                                          AlphaNumBodyExpr $ mkRanged 17 18 19 20 "subId2"
+                                                        ],
+                                                    ebSemicolon = Nothing
+                                                  }
+                                              ],
+                                        ibKind = RoundBrackets
+                                      },
+                                  AlphaNumBodyExpr $ mkRanged 21 22 23 24 "id2"
+                                ],
                             ebSemicolon = Nothing
                           }
                       ]

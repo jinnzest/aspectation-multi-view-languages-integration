@@ -75,7 +75,7 @@ lexerFormattedWritingTests =
         [sbt|
                                   |(first_parameter)
                                   | +
-                                  | (second_parameter) -> ()
+                                  | (second_parameter) -> ;
                                   |],
       testCaseParseFormatted
         [sbt|

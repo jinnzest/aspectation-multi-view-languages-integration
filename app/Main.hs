@@ -4,7 +4,7 @@ import Control.Monad (return)
 import Control.Monad.Except (runExceptT)
 import Data.Either (Either (Left, Right))
 import Data.Function (($))
-import Data.List as L (head, last)
+import Data.List as L (last)
 import Data.Text (pack, splitOn)
 import Data.Text.IO as TIO (putStrLn)
 import Main.Syntax.Lexer.Parsing.LexerIO (lexingIO)
@@ -20,8 +20,8 @@ main = do
   name <- getProgName
   case args of
     [] -> TIO.putStrLn [st|Usage: #{name} path-to-source-file|]
-    _ -> do
-      let sourceFilePath = pack $ L.head args
+    firstArg : _ -> do
+      let sourceFilePath = pack firstArg
       let fileName = L.last $ splitOn "/" sourceFilePath
       resultEx <- runExceptT $ lexingIO sourceFilePath [st|main.#{fileName}|]
       case resultEx of

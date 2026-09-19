@@ -4,7 +4,7 @@ module Main.Syntax.Lexer.LexerModel
   ( Func (Func, fBody, fSig),
     LexerModel,
     Number (Number, mant, dec, exp, sign),
-    Nested (InBracketsNested, IndentedNested, ibExprs, ibKind),
+    Nested (InBracketsNested, IndentedNested, EmptyNested, ibExprs, ibKind),
     BodyExpr
       ( AlphaNumBodyExpr,
         SpecBodyExpr,
@@ -61,12 +61,15 @@ data Number = Number
   deriving (ToJSON) via Vanilla Number
 
 type ExprsBlock :: Type
-data ExprsBlock = ExprsBlock {ebExprs :: [BodyExpr], ebSemicolon :: Maybe (Ranged ())}
+data ExprsBlock = ExprsBlock {ebExprs :: NonEmpty BodyExpr, ebSemicolon :: Maybe (Ranged ())}
   deriving stock (Eq, Ord, Generic)
   deriving (ToJSON) via Vanilla ExprsBlock
 
 type Nested :: Type
-data Nested = IndentedNested [ExprsBlock] | InBracketsNested {ibExprs :: OcRanged [ExprsBlock], ibKind :: BracketsKind}
+data Nested
+  = IndentedNested (NonEmpty ExprsBlock)
+  | InBracketsNested {ibExprs :: OcRanged (NonEmpty ExprsBlock), ibKind :: BracketsKind}
+  | EmptyNested (Ranged ())
   deriving stock (Eq, Ord, Generic)
   deriving (ToJSON) via Vanilla Nested
 
@@ -108,7 +111,7 @@ data ParamSigExpr
   deriving (ToJSON) via Vanilla ParamSigExpr
 
 type FuncBody :: Type
-newtype FuncBody = FuncBody (Ranged [ExprsBlock])
+newtype FuncBody = FuncBody (Ranged (NonEmpty ExprsBlock))
   deriving stock (Eq, Generic)
   deriving (ToJSON) via Vanilla FuncBody
 
@@ -194,9 +197,6 @@ instance Show Nested where
 instance ToText Number where
   toText = fromString . showYaml
 
-instance ToText (NonEmpty ExprsBlock) where
-  toText = fromString . showYaml
-
 instance ToText ParamSigExpr where
   toText = fromString . showYaml
 
@@ -206,7 +206,7 @@ instance ToText HpParamSigExpr where
 instance ToText ExprsBlock where
   toText = fromString . showYaml
 
-instance ToText [ExprsBlock] where
+instance ToText (NonEmpty ExprsBlock) where
   toText = fromString . showYaml
 
 instance ToText FuncSig where

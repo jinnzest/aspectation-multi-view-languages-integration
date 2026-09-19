@@ -5,8 +5,8 @@ module Main.Syntax.Lexer.Parsing.LexerIO
 where
 
 import Control.Monad (Monad (return))
-import Control.Monad.Cont (MonadIO (liftIO))
 import Control.Monad.Except (ExceptT, mapExceptT, throwError)
+import Control.Monad.IO.Class (MonadIO (liftIO))
 import Data.Either (Either (Left, Right))
 import Data.Function (($), (.))
 import Data.Functor.Identity (Identity (runIdentity))

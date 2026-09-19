@@ -3,14 +3,15 @@ module Main.Syntax.Lexer.Writing.Ranged
   )
 where
 
-import Data.Function (flip, ($), (.))
+import Data.Function (const, flip, ($), (.))
 import Data.Int (Int)
-import Data.List as L (head, last, length, map, null, zipWith)
+import Data.List as L (length, map, zipWith)
+import Data.List.NonEmpty as NE (NonEmpty, fromList, head, last, map, toList)
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Monoid (Monoid (mconcat))
-import Data.Text as T (Text)
+import Data.Text as T (Text, null)
 import GHC.Num (Num ((+)))
-import Main.Syntax.Lexer.LexerModel (BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr), ExprsBlock (ExprsBlock, ebExprs, ebSemicolon), Func (Func, fBody, fSig), FuncBody (FuncBody), FuncSig (FuncSig, fsName, fsParams), FuncSigParams (InfixSigParams, PrefixSigParams), HoParamParams (HoInfixParamParams, HoPrefixParamParams), HpParamSigExpr (FoParamSigExpr, HoParamSigExpr, hpseName, hpseParams), NameSigExpr (AlphaNumNameSigExpr, SpecNameSigExpr), Nested (InBracketsNested, IndentedNested, ibExprs), Number (Number, dec, exp, mant, sign), ParamSigExpr (AlphaNumParamSigExpr, HpParamSigExpr, NumberParamSigExpr, TextParamSigExpr))
+import Main.Syntax.Lexer.LexerModel (BodyExpr (AlphaNumBodyExpr, HigherPriorityExpr, NumberBodyExpr, SpecBodyExpr, TextBodyExpr, UnderscoreBodyExpr), ExprsBlock (ExprsBlock, ebExprs, ebSemicolon), Func (Func, fBody, fSig), FuncBody (FuncBody), FuncSig (FuncSig, fsName, fsParams), FuncSigParams (InfixSigParams, PrefixSigParams), HoParamParams (HoInfixParamParams, HoPrefixParamParams), HpParamSigExpr (FoParamSigExpr, HoParamSigExpr, hpseName, hpseParams), NameSigExpr (AlphaNumNameSigExpr, SpecNameSigExpr), Nested (EmptyNested, InBracketsNested, IndentedNested, ibExprs), Number (Number, dec, exp, mant, sign), ParamSigExpr (AlphaNumParamSigExpr, HpParamSigExpr, NumberParamSigExpr, TextParamSigExpr))
 import Main.Syntax.Lexer.Parsing.Shared (getBodyExprRange, getBodyExprsRange, getNameSigExprRange, getParamSigExprRange)
 import Shared.Location.Data (OcRanged (ocItem, ocRange), Range (Range, from, to), Ranged (Ranged, rItem, range))
 import Shared.Text.Utils (indent, nL)
@@ -43,23 +44,21 @@ writeExprsBlock ind eb@ExprsBlock {ebExprs = exprs, ebSemicolon = semicolon} =
         Nothing -> ""
         Just (Ranged {range = r}) -> [st|#{nlIndent nextInd}#{r} semicolon|]
       exprsBlockText = case semicolon of
-        Nothing -> mconcat $ map (`writeBodyExpr` nextInd) exprs
+        Nothing -> mconcat $ L.map (`writeBodyExpr` nextInd) $ NE.toList exprs
         Just _ ->
-          if null exprs
-            then ""
-            else
-              let nextNextInd = nextInd + 1
-                  exprsText = mconcat $ map (`writeBodyExpr` nextNextInd) exprs
-                  exprsRange = getBodyExprsRange exprs
-               in [st|#{nlIndent nextInd}#{exprsRange} expressions#{exprsText}|]
+          let nextNextInd = nextInd + 1
+              exprsText = mconcat $ L.map (`writeBodyExpr` nextNextInd) $ NE.toList exprs
+              exprsRange = getBodyExprsRange exprs
+           in if T.null exprsText
+                then [st|#{nlIndent nextInd}#{exprsRange} empty nested|]
+                else [st|#{nlIndent nextInd}#{exprsRange} expressions#{exprsText}|]
    in [st|#{nlIndent ind}#{exprsBlockRange} expressions block#{simicolonText}#{exprsBlockText}|]
 
 getExprsBlockRange :: ExprsBlock -> Range
-getExprsBlockRange (ExprsBlock {ebExprs = exprs, ebSemicolon = Nothing}) = Range {from = from $ getBodyExprRange $ head exprs, to = to $ getBodyExprRange $ last exprs}
-getExprsBlockRange (ExprsBlock {ebExprs = [], ebSemicolon = Just Ranged {range = r}}) =
-  Range {from = from r, to = to r}
-getExprsBlockRange (ExprsBlock {ebExprs = exprs, ebSemicolon = Just Ranged {range = r}}) =
-  Range {from = from r, to = to $ getBodyExprRange $ last exprs}
+getExprsBlockRange (ExprsBlock {ebExprs = exprs}) = Range {from = from $ getBodyExprRange $ NE.head exprs, to = to $ getBodyExprRange $ NE.last exprs}
+
+-- getExprsBlockRange (ExprsBlock {ebExprs = exprs, ebSemicolon = Just Ranged {range = r}}) =
+--   Range {from = from r, to = to $ getBodyExprRange $ NE.last exprs}
 
 writeNameExpr :: NameSigExpr -> Int -> Text
 writeNameExpr (AlphaNumNameSigExpr ranged) = writeRanged "alphnumeric identifier" writeIndented ranged
@@ -118,19 +117,20 @@ writeBodyExpr (NumberBodyExpr ranged) =
     ranged
 writeBodyExpr (TextBodyExpr ranged) = writeRanged "text" writeIndented ranged
 writeBodyExpr (HigherPriorityExpr (IndentedNested expressions)) = \ind ->
-  let expressionsText = mconcat $ map (writeExprsBlock (ind + 1)) expressions
-      exprRange = Range {from = from $ getExprsBlockRange $ head expressions, to = to $ getExprsBlockRange $ last expressions}
+  let expressionsText = mconcat $ L.map (writeExprsBlock (ind + 1)) $ NE.toList expressions
+      exprRange = Range {from = from $ getExprsBlockRange $ NE.head expressions, to = to $ getExprsBlockRange $ NE.last expressions}
    in [st|#{nlIndent ind}#{exprRange} nested expressions#{expressionsText}|]
 writeBodyExpr (HigherPriorityExpr InBracketsNested {ibExprs}) =
-  writeOcRanged "higher priority expressions" (\nextInd expr -> mconcat $ map (writeExprsBlock nextInd) expr) ibExprs
+  writeOcRanged "higher priority expressions" (\nextInd expr -> mconcat $ NE.toList $ NE.map (writeExprsBlock nextInd) expr) ibExprs
+writeBodyExpr (HigherPriorityExpr (EmptyNested _)) = const ""
 writeBodyExpr (UnderscoreBodyExpr ranged) =
   writeRanged "underscore" (\_ _ -> "") ranged
 
-writeBody :: Ranged [ExprsBlock] -> Int -> Text
+writeBody :: Ranged (NonEmpty ExprsBlock) -> Int -> Text
 writeBody =
   writeRanged
     "function body"
-    (\nextInd expression -> let expressionTexts = map (writeExprsBlock nextInd) expression in mconcat expressionTexts)
+    (\nextInd expression -> let expressionTexts = NE.map (writeExprsBlock nextInd) expression in mconcat $ NE.toList expressionTexts)
 
 writeInfixParams :: ParamSigExpr -> ParamSigExpr -> Int -> Text
 writeInfixParams leftParam rightParam ind =
@@ -144,20 +144,23 @@ writeInfixParams leftParam rightParam ind =
 
 writePrefixParams :: [ParamSigExpr] -> Int -> Text
 writePrefixParams [] _ = ""
-writePrefixParams args ind =
+writePrefixParams args ind = writePrefixParamsNE ind $ NE.fromList args
+
+writePrefixParamsNE :: Int -> NonEmpty ParamSigExpr -> Text
+writePrefixParamsNE ind args =
   let nextInd = ind + 1
       nextNextInd = nextInd + 1
       argsText =
-        mconcat $
-          zipWith
+        mconcat
+          $ zipWith
             ( \i a ->
                 let argRange = getParamSigExprRange a
                  in [st|#{nlIndent nextInd}#{argRange} parameter #{i}#{writeParamSigExpr a nextNextInd}|]
             )
             [1 :: Int ..]
-            args
-      f = from $ getParamSigExprRange $ head args
-      t = to $ getParamSigExprRange $ last args
+          $ NE.toList args
+      f = from $ getParamSigExprRange $ NE.head args
+      t = to $ getParamSigExprRange $ NE.last args
       argsRange = [st|#{f} - #{t}|]
    in [st|#{nlIndent ind}#{argsRange} parameters#{argsText}|]
 
@@ -194,4 +197,4 @@ writeFunc ranged =
     ranged
 
 writeFuncs :: [Ranged Func] -> Text
-writeFuncs = mconcat . map (`writeFunc` 0)
+writeFuncs = mconcat . L.map (`writeFunc` 0)

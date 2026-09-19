@@ -6,22 +6,19 @@ import Data.Foldable (Foldable (foldl))
 import Data.Function (($), (.))
 import Data.Int (Int)
 import Data.Kind (Type)
-import Data.List (concatMap, filter, init, map)
-import Data.List as L (foldr, last, reverse, (++))
+import Data.List as L (concatMap, foldr, init, last, map, reverse)
+import Data.List.NonEmpty as NE (NonEmpty, appendList, filter, fromList, head, last, reverse, singleton, (<|))
 import Data.Maybe (Maybe (Just, Nothing))
 import Data.Ord (Ord ((<), (<=), (>)))
 import Data.Tuple (snd)
 import Main.Syntax.Lexer.LexerModel
   ( BodyExpr (HigherPriorityExpr, SpecBodyExpr),
     ExprsBlock (ExprsBlock, ebExprs),
-    Nested (IndentedNested),
+    Nested (EmptyNested, IndentedNested),
     ebSemicolon,
   )
 import Main.Syntax.Lexer.Parsing.Shared (getBodyExprRange)
 import Shared.Location.Data (Position (column, line), Range (from, to), Ranged (Ranged, rItem))
-
--- import Text.Shakespeare.Text (st)
--- import Shared.Conditional.Debug.Trace (trace)
 
 type LayoutingCtx :: Type
 data LayoutingCtx = LayoutingCtx
@@ -44,23 +41,19 @@ foldByLines expr (lastLineFrom, block@(ExprsBlock {ebExprs = exprs} : tail)) =
       currLineTo = lineExprEnds expr
       newBlock =
         if currLineTo == lastLineFrom
-          then ExprsBlock {ebExprs = expr : exprs, ebSemicolon = Nothing} : tail
-          else ExprsBlock {ebExprs = [expr], ebSemicolon = Nothing} : block
+          then ExprsBlock {ebExprs = expr <| exprs, ebSemicolon = Nothing} : tail
+          else ExprsBlock {ebExprs = singleton expr, ebSemicolon = Nothing} : block
    in (currLineFrom, newBlock)
 
 splitByLines :: [BodyExpr] -> [ExprsBlock]
 splitByLines [] = []
 splitByLines exprs =
-  let lastExpr = last exprs
-      initExprs = init exprs
-      lastExprBlock = [ExprsBlock {ebExprs = [lastExpr], ebSemicolon = Nothing}]
+  let lastExpr = L.last exprs
+      initExprs = L.init exprs
+      lastExprBlock = [ExprsBlock {ebExprs = singleton lastExpr, ebSemicolon = Nothing}]
       lineLastExprStarts = lineExprStarts lastExpr
       result = foldr foldByLines (lineLastExprStarts, lastExprBlock) initExprs
    in snd result
-
-applyHeadOrZero :: (t -> Int) -> [t] -> Int
-applyHeadOrZero _ [] = 0
-applyHeadOrZero f (h : _) = f h
 
 layoutingByIndent :: LayoutingCtx -> LayoutingCtx
 layoutingByIndent ctx@LayoutingCtx {unprocessed = []} = ctx
@@ -74,17 +67,20 @@ layoutingByIndent
       unprocessed = unprocessedExprs@(unprocessedHead@(ExprsBlock {ebExprs = unprocessedBlock}) : unprocessedTail)
     } =
     let itemIndent = column . from . getBodyExprRange
-        processedExprsLine = lineExprEnds $ last processedBlock
-        unprocessedIndent = applyHeadOrZero itemIndent unprocessedBlock
-        filterOutNestedExpr = filter (\case (HigherPriorityExpr (IndentedNested _)) -> False; _ -> True)
-        exprsBlockHeadIndent (ExprsBlock {ebExprs = exprs}) = applyHeadOrZero itemIndent $ filterOutNestedExpr exprs
+        processedExprsLine = lineExprEnds $ NE.last processedBlock
+        unprocessedIndent = itemIndent $ NE.head unprocessedBlock
+        filterOutNestedExpr = NE.filter (\case (HigherPriorityExpr (IndentedNested _)) -> False; _ -> True)
+        exprsBlockHeadIndent (ExprsBlock {ebExprs}) =
+          case filterOutNestedExpr ebExprs of
+            [] -> 0
+            headExpr : _ -> itemIndent headExpr
         processedIndent
           | baseBlockLine == processedExprsLine = 0
           | otherwise = exprsBlockHeadIndent processedExprsHead
         layoutSmallerIndention =
           layoutingByIndent
             ctx
-              { processed = [ExprsBlock {ebExprs = HigherPriorityExpr (IndentedNested (reverse processedExprs)) : unprocessedBlock, ebSemicolon = Nothing}],
+              { processed = [ExprsBlock {ebExprs = HigherPriorityExpr (IndentedNested (NE.fromList $ L.reverse processedExprs)) <| unprocessedBlock, ebSemicolon = Nothing}],
                 unprocessed = unprocessedTail
               }
         layoutEqualIndention =
@@ -101,12 +97,12 @@ layoutingByIndent
                       processed = [],
                       unprocessed = unprocessedExprs
                     }
-              processedNested = reverse $ processed nested
+              processedNested = L.reverse $ processed nested
               unprocessedNested = unprocessed nested
            in layoutingByIndent
                 ctx
                   { baseBlockIndent,
-                    processed = ExprsBlock {ebExprs = processedBlock ++ [HigherPriorityExpr (IndentedNested processedNested)], ebSemicolon = Nothing} : processedTail,
+                    processed = ExprsBlock {ebExprs = NE.appendList processedBlock [HigherPriorityExpr (IndentedNested (NE.fromList processedNested))], ebSemicolon = Nothing} : processedTail,
                     unprocessed = unprocessedNested
                   }
      in if unprocessedIndent <= baseBlockIndent
@@ -121,27 +117,31 @@ layoutingByIndent
 
 foldingExprBySemicolon :: [ExprsBlock] -> BodyExpr -> [ExprsBlock]
 foldingExprBySemicolon blocks (SpecBodyExpr r@Ranged {rItem = ";"}) =
-  ExprsBlock {ebExprs = [], ebSemicolon = Just r {rItem = ()}} : blocks
+  ExprsBlock {ebExprs = singleton $ HigherPriorityExpr (EmptyNested r {rItem = ()}), ebSemicolon = Just r {rItem = ()}} : blocks
 foldingExprBySemicolon [] expr =
-  [ExprsBlock {ebExprs = [expr], ebSemicolon = Nothing}]
+  [ExprsBlock {ebExprs = NE.singleton expr, ebSemicolon = Nothing}]
 foldingExprBySemicolon (ExprsBlock {ebExprs = exprs, ebSemicolon = sc@(Just _)} : blocksTail) expr =
-  ExprsBlock {ebExprs = expr : exprs, ebSemicolon = sc} : blocksTail
+  ExprsBlock {ebExprs = expr <| exprs, ebSemicolon = sc} : blocksTail
 foldingExprBySemicolon (eb@ExprsBlock {ebExprs = exprs} : blocksTail) expr =
-  eb {ebExprs = expr : exprs} : blocksTail
+  eb {ebExprs = expr <| exprs} : blocksTail
 
 layoutingBlockBySemicolon :: ExprsBlock -> [ExprsBlock]
 layoutingBlockBySemicolon ExprsBlock {ebExprs = ebExprs} =
   let blocks = foldl foldingExprBySemicolon [] ebExprs
-      reversedBlocks = map (\eb@ExprsBlock {ebExprs = exprs} -> eb {ebExprs = reverse exprs}) blocks
-   in reverse reversedBlocks
+      reversedBlocks =
+        L.map
+          ( \eb@ExprsBlock {ebExprs = exprs} -> eb {ebExprs = NE.reverse exprs}
+          )
+          blocks
+   in L.reverse reversedBlocks
 
-layoutingBlocksBySemicolon :: [ExprsBlock] -> [ExprsBlock]
-layoutingBlocksBySemicolon = concatMap layoutingBlockBySemicolon
+layoutingBlocksBySemicolon :: [ExprsBlock] -> NonEmpty ExprsBlock
+layoutingBlocksBySemicolon = NE.fromList . concatMap layoutingBlockBySemicolon
 
-mkLayouts :: Int -> [BodyExpr] -> [ExprsBlock]
+mkLayouts :: Int -> [BodyExpr] -> NonEmpty ExprsBlock
 mkLayouts baseBlockLine expressions =
   layoutingBlocksBySemicolon $
-    reverse $
+    L.reverse $
       processed $
         layoutingByIndent
           LayoutingCtx
